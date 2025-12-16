@@ -1,17 +1,19 @@
 package fpt.kiennt169.springboot.services;
 
-import fpt.kiennt169.springboot.dtos.QuestionRequestDTO;
-import fpt.kiennt169.springboot.dtos.QuestionResponseDTO;
+import fpt.kiennt169.springboot.dtos.PageResponseDTO;
+import fpt.kiennt169.springboot.dtos.questions.QuestionRequestDTO;
+import fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO;
 import fpt.kiennt169.springboot.entities.Question;
 import fpt.kiennt169.springboot.entities.Quiz;
+import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
 import fpt.kiennt169.springboot.repositories.QuestionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +24,16 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public QuestionResponseDTO createQuestion(QuestionRequestDTO requestDTO) {
+        // Quiz quiz = quizRepository.findById(requestDTO.quizId())
+        // .orElseThrow(() -> new RuntimeException("Quiz not found"));
+        // question.setQuiz(quiz);
         Quiz quiz = new Quiz();
-        quiz.setId(requestDTO.getQuizId());
+        quiz.setId(requestDTO.quizId());
         
         Question question = new Question();
-        question.setContent(requestDTO.getContent());
-        question.setType(requestDTO.getType());
-        question.setScore(requestDTO.getScore());
+        question.setContent(requestDTO.content());
+        question.setType(requestDTO.type());
+        question.setScore(requestDTO.score());
         question.setQuiz(quiz);
         
         Question savedQuestion = questionRepository.save(question);
@@ -37,32 +42,32 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<QuestionResponseDTO> getAllQuestions() {
-        return questionRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public PageResponseDTO<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
+        Page<Question> questionPage = questionRepository.findAll(pageable);
+        Page<QuestionResponseDTO> responsePage = questionPage.map(this::mapToResponseDTO);
+        return PageResponseDTO.from(responsePage);
     }
 
     @Override
     @Transactional(readOnly = true)
     public QuestionResponseDTO getQuestionById(UUID id) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
         return mapToResponseDTO(question);
     }
 
     @Override
     public QuestionResponseDTO updateQuestion(UUID id, QuestionRequestDTO requestDTO) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
         
-        question.setContent(requestDTO.getContent());
-        question.setType(requestDTO.getType());
-        question.setScore(requestDTO.getScore());
+        question.setContent(requestDTO.content());
+        question.setType(requestDTO.type());
+        question.setScore(requestDTO.score());
         
-        if (!question.getQuiz().getId().equals(requestDTO.getQuizId())) {
+        if (!question.getQuiz().getId().equals(requestDTO.quizId())) {
             Quiz newQuiz = new Quiz();
-            newQuiz.setId(requestDTO.getQuizId());
+            newQuiz.setId(requestDTO.quizId());
             question.setQuiz(newQuiz);
         }
         
@@ -73,19 +78,19 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public void deleteQuestion(UUID id) {
         if (!questionRepository.existsById(id)) {
-            throw new RuntimeException("Question not found with id: " + id);
+            throw new ResourceNotFoundException("Question", "id", id);
         }
         questionRepository.deleteById(id);
     }
     
     private QuestionResponseDTO mapToResponseDTO(Question question) {
-        return QuestionResponseDTO.builder()
-                .id(question.getId())
-                .content(question.getContent())
-                .type(question.getType())
-                .score(question.getScore())
-                .quizId(question.getQuiz().getId())
-                .quizTitle(question.getQuiz().getTitle())
-                .build();
+        return new QuestionResponseDTO(
+                question.getId(),
+                question.getContent(),
+                question.getType(),
+                question.getScore(),
+                question.getQuiz().getId(),
+                question.getQuiz().getTitle()
+        );
     }
 }

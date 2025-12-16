@@ -1,16 +1,18 @@
 package fpt.kiennt169.springboot.services;
 
-import fpt.kiennt169.springboot.dtos.QuestionRequestDTO;
-import fpt.kiennt169.springboot.dtos.QuestionResponseDTO;
-
-import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.domain.Pageable;
+
+import fpt.kiennt169.springboot.dtos.PageResponseDTO;
+import fpt.kiennt169.springboot.dtos.questions.QuestionRequestDTO;
+import fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO;
 
 public interface QuestionService {
     
     QuestionResponseDTO createQuestion(QuestionRequestDTO requestDTO);
     
-    List<QuestionResponseDTO> getAllQuestions();
+    PageResponseDTO<QuestionResponseDTO> getAllQuestions(Pageable pageable);
     
     QuestionResponseDTO getQuestionById(UUID id);
     
