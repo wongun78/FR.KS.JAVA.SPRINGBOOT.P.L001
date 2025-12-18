@@ -29,6 +29,9 @@ public class Quiz extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = false;
     
-    @OneToMany(mappedBy = "quiz")
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
+    
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizSubmission> submissions;
 }
