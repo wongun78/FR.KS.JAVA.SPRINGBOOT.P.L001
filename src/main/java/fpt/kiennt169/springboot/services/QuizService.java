@@ -15,11 +15,11 @@ public interface QuizService {
     
     QuizResponseDTO getQuizById(UUID id);
     
-    QuizDetailResponseDTO getQuizWithQuestions(UUID id);
-    
     QuizResponseDTO updateQuiz(UUID id, QuizRequestDTO requestDTO);
     
     void deleteQuiz(UUID id);
+
+    QuizDetailResponseDTO getQuizWithQuestions(UUID id);
     
     QuizDetailResponseDTO addQuestionToQuiz(UUID quizId, UUID questionId);
     
