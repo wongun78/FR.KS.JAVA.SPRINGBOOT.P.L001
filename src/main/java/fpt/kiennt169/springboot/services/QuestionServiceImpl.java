@@ -3,9 +3,12 @@ package fpt.kiennt169.springboot.services;
 import fpt.kiennt169.springboot.dtos.PageResponseDTO;
 import fpt.kiennt169.springboot.dtos.questions.QuestionRequestDTO;
 import fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO;
+import fpt.kiennt169.springboot.entities.Answer;
 import fpt.kiennt169.springboot.entities.Question;
 import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
+import fpt.kiennt169.springboot.mappers.AnswerMapper;
 import fpt.kiennt169.springboot.mappers.QuestionMapper;
+import fpt.kiennt169.springboot.repositories.AnswerRepository;
 import fpt.kiennt169.springboot.repositories.QuestionRepository;
 import fpt.kiennt169.springboot.repositories.QuizRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +28,9 @@ public class QuestionServiceImpl implements QuestionService {
     
     private final QuestionRepository questionRepository;
     private final QuizRepository quizRepository; 
+    private final AnswerRepository answerRepository;
     private final QuestionMapper questionMapper;
+    private final AnswerMapper answerMapper;
 
     @Override
     public QuestionResponseDTO createQuestion(QuestionRequestDTO requestDTO) {
@@ -32,8 +39,20 @@ public class QuestionServiceImpl implements QuestionService {
         }
         
         Question question = questionMapper.toEntity(requestDTO);
-        
         Question savedQuestion = questionRepository.save(question);
+        
+        // Create answers and link to question
+        List<Answer> answers = requestDTO.answers().stream()
+                .map(answerDTO -> {
+                    Answer answer = answerMapper.toEntity(answerDTO);
+                    answer.setQuestion(savedQuestion);
+                    return answer;
+                })
+                .collect(Collectors.toList());
+        
+        answerRepository.saveAll(answers);
+        savedQuestion.setAnswers(answers);
+        
         return questionMapper.toResponseDTO(savedQuestion);
     }
 
@@ -66,6 +85,21 @@ public class QuestionServiceImpl implements QuestionService {
         }
         
         questionMapper.updateEntityFromDTO(requestDTO, question);
+        
+        // Delete old answers
+        answerRepository.deleteAll(question.getAnswers());
+        
+        // Create new answers
+        List<Answer> newAnswers = requestDTO.answers().stream()
+                .map(answerDTO -> {
+                    Answer answer = answerMapper.toEntity(answerDTO);
+                    answer.setQuestion(question);
+                    return answer;
+                })
+                .collect(Collectors.toList());
+        
+        answerRepository.saveAll(newAnswers);
+        question.setAnswers(newAnswers);
         
         Question updatedQuestion = questionRepository.save(question);
         return questionMapper.toResponseDTO(updatedQuestion);

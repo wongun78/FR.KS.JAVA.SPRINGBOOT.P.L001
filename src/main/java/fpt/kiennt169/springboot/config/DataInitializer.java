@@ -263,6 +263,7 @@ public class DataInitializer {
         answer.setContent(content);
         answer.setIsCorrect(isCorrect);
         answer.setQuestion(question);
+        question.getAnswers().add(answer); // Sync bidirectional relationship
         answerRepository.save(answer);
         log.info("    * Answer: {} [{}]", content, isCorrect ? "CORRECT" : "WRONG");
     }

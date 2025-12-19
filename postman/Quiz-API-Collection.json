@@ -21,14 +21,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"What is the capital of France?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 10,\n  \"quizId\": \"{{quizId}}\"\n}"
+              "raw": "{\n  \"content\": \"What is the capital of France?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 10,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Paris\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"London\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Berlin\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Madrid\",\n      \"isCorrect\": false\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/questions",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "questions"]
             },
-            "description": "Create a new question"
+            "description": "Create a new question with answers"
           },
           "response": []
         },
@@ -94,14 +94,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"What is the capital of Germany?\",\n  \"type\": \"MULTIPLE_CHOICE\",\n  \"score\": 15,\n  \"quizId\": \"{{quizId}}\"\n}"
+              "raw": "{\n  \"content\": \"What is the capital of Germany?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 15,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Berlin\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"Munich\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Hamburg\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Frankfurt\",\n      \"isCorrect\": false\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "questions", "{{questionId}}"]
             },
-            "description": "Update an existing question"
+            "description": "Update an existing question with answers"
           },
           "response": []
         },

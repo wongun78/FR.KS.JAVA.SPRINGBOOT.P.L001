@@ -5,7 +5,5 @@ import java.util.UUID;
 public record AnswerResponseDTO(
     UUID id,
     String content,
-    Boolean isCorrect,
-    UUID questionId,
-    String questionContent
+    Boolean isCorrect
 ) {}

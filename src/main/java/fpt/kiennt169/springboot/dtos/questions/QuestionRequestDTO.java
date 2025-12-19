@@ -1,8 +1,11 @@
 package fpt.kiennt169.springboot.dtos.questions;
 
+import fpt.kiennt169.springboot.dtos.answers.AnswerRequestDTO;
 import fpt.kiennt169.springboot.enums.QuestionTypeEnum;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
+import java.util.List;
 import java.util.UUID;
 
 public record QuestionRequestDTO(
@@ -18,5 +21,9 @@ public record QuestionRequestDTO(
     Integer score,
     
     @NotNull(message = "Quiz ID is required")
-    UUID quizId
+    UUID quizId,
+    
+    @NotEmpty(message = "At least one answer is required")
+    @Valid
+    List<AnswerRequestDTO> answers
 ) {}

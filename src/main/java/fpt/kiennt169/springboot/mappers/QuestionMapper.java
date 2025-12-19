@@ -8,7 +8,7 @@ import org.mapstruct.*;
 
 import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {AnswerMapper.class})
 public interface QuestionMapper {
  
     @Mapping(source = "quiz.id", target = "quizId")

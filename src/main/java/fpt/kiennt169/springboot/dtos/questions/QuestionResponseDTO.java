@@ -1,7 +1,9 @@
 package fpt.kiennt169.springboot.dtos.questions;
 
+import fpt.kiennt169.springboot.dtos.answers.AnswerResponseDTO;
 import fpt.kiennt169.springboot.enums.QuestionTypeEnum;
 
+import java.util.List;
 import java.util.UUID;
 
 public record QuestionResponseDTO(
@@ -10,5 +12,6 @@ public record QuestionResponseDTO(
     QuestionTypeEnum type,
     Integer score,
     UUID quizId,
-    String quizTitle
+    String quizTitle,
+    List<AnswerResponseDTO> answers
 ) {}
