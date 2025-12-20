@@ -41,7 +41,6 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionMapper.toEntity(requestDTO);
         Question savedQuestion = questionRepository.save(question);
         
-        // Create answers and link to question
         List<Answer> answers = requestDTO.answers().stream()
                 .map(answerDTO -> {
                     Answer answer = answerMapper.toEntity(answerDTO);

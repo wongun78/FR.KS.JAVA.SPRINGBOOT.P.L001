@@ -5,6 +5,7 @@ import fpt.kiennt169.springboot.dtos.users.UserRequestDTO;
 import fpt.kiennt169.springboot.dtos.users.UserResponseDTO;
 import fpt.kiennt169.springboot.entities.Role;
 import fpt.kiennt169.springboot.entities.User;
+import fpt.kiennt169.springboot.exceptions.EmailAlreadyExistsException;
 import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
 import fpt.kiennt169.springboot.mappers.UserMapper;
 import fpt.kiennt169.springboot.repositories.RoleRepository;
@@ -33,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO createUser(UserRequestDTO requestDTO) {
         if (userRepository.existsByEmail(requestDTO.email())) {
-            throw new IllegalStateException("Email already exists: " + requestDTO.email());
+            throw new EmailAlreadyExistsException(requestDTO.email());
         }
         
         User user = userMapper.toEntity(requestDTO);
@@ -88,7 +89,7 @@ public class UserServiceImpl implements UserService {
         
         if (requestDTO.email() != null && !user.getEmail().equals(requestDTO.email())) {
             if (userRepository.existsByEmail(requestDTO.email())) {
-                throw new IllegalStateException("Email already exists: " + requestDTO.email());
+                throw new EmailAlreadyExistsException(requestDTO.email());
             }
         }
         

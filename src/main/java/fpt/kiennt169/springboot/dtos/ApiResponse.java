@@ -31,6 +31,8 @@ public class ApiResponse<T> {
 
     private Object errors;
 
+    private String path;
+
     /**
      * Creates a successful response with data.
      */
@@ -70,23 +72,25 @@ public class ApiResponse<T> {
     /**
      * Creates an error response.
      */
-    public static <T> ApiResponse<T> error(int status, String message, Object errors) {
+    public static <T> ApiResponse<T> error(int status, String message, Object errors, String path) {
         return ApiResponse.<T>builder()
                 .timestamp(LocalDateTime.now())
                 .status(status)
                 .message(message)
                 .errors(errors)
+                .path(path)
                 .build();
     }
 
     /**
      * Creates an error response without error details.
      */
-    public static <T> ApiResponse<T> error(int status, String message) {
+    public static <T> ApiResponse<T> error(int status, String message, String path) {
         return ApiResponse.<T>builder()
                 .timestamp(LocalDateTime.now())
                 .status(status)
                 .message(message)
+                .path(path)
                 .build();
     }
 

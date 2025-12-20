@@ -30,7 +30,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = true;
     
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
