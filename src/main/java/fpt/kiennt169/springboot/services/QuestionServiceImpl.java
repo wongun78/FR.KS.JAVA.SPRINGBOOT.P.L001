@@ -85,10 +85,8 @@ public class QuestionServiceImpl implements QuestionService {
         
         questionMapper.updateEntityFromDTO(requestDTO, question);
         
-        // Delete old answers
         answerRepository.deleteAll(question.getAnswers());
         
-        // Create new answers
         List<Answer> newAnswers = requestDTO.answers().stream()
                 .map(answerDTO -> {
                     Answer answer = answerMapper.toEntity(answerDTO);

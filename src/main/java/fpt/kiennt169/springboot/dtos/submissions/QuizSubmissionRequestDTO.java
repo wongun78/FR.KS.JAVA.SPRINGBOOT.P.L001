@@ -5,13 +5,13 @@ import java.util.UUID;
 
 public record QuizSubmissionRequestDTO(
     
-    @NotNull(message = "Score is required")
-    @Min(value = 0, message = "Score must be at least 0")
+    @NotNull(message = "{validation.submission.score.notnull}")
+    @Min(value = 0, message = "{validation.submission.score.min}")
     Double score,
     
-    @NotNull(message = "User ID is required")
+    @NotNull(message = "{validation.submission.userid.notnull}")
     UUID userId,
     
-    @NotNull(message = "Quiz ID is required")
+    @NotNull(message = "{validation.submission.quizid.notnull}")
     UUID quizId
 ) {}

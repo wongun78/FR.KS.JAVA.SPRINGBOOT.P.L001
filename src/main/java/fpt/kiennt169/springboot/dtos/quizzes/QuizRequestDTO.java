@@ -7,15 +7,15 @@ import jakarta.validation.constraints.Size;
 
 public record QuizRequestDTO(
     
-    @NotBlank(message = "Title is required")
-    @Size(max = 150, message = "Title must not exceed 150 characters")
+    @NotBlank(message = "{validation.quiz.title.notblank}")
+    @Size(max = 150, message = "{validation.quiz.title.size}")
     String title,
     
-    @Size(max = 500, message = "Description must not exceed 500 characters")
+    @Size(max = 500, message = "{validation.quiz.description.size}")
     String description,
     
-    @NotNull(message = "Duration is required")
-    @Min(value = 1, message = "Duration must be at least 1 minute")
+    @NotNull(message = "{validation.quiz.duration.notnull}")
+    @Min(value = 1, message = "{validation.quiz.duration.min}")
     Integer durationMinutes,
     
     Boolean active

@@ -6,16 +6,16 @@ import java.util.UUID;
 
 public record UserRequestDTO(
     
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @NotBlank(message = "{validation.email.notblank}")
+    @Email(message = "{validation.email.invalid}")
     String email,
     
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @NotBlank(message = "{validation.password.notblank}")
+    @Size(min = 8, message = "{validation.password.size}")
     String password,
     
-    @NotBlank(message = "Full name is required")
-    @Size(max = 100, message = "Full name must not exceed 100 characters")
+    @NotBlank(message = "{validation.fullname.notblank}")
+    @Size(max = 100, message = "{validation.fullname.size}")
     String fullName,
     
     Boolean active,

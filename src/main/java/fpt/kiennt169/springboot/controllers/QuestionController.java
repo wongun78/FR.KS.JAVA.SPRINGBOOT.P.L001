@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class QuestionController {
     private final MessageUtil messageUtil;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<QuestionResponseDTO>> createQuestion(
             @Valid @RequestBody QuestionRequestDTO requestDTO) {
         QuestionResponseDTO response = questionService.createQuestion(requestDTO);
@@ -45,6 +47,7 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<QuestionResponseDTO>> updateQuestion(
             @PathVariable UUID id,
             @Valid @RequestBody QuestionRequestDTO requestDTO) {
@@ -53,6 +56,7 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteQuestion(@PathVariable UUID id) {
         questionService.deleteQuestion(id);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.question.deleted")));

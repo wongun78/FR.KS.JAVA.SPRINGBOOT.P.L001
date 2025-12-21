@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class QuizController {
     private final MessageUtil messageUtil;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<QuizResponseDTO>> createQuiz(
             @Valid @RequestBody QuizRequestDTO requestDTO) {
         QuizResponseDTO response = quizService.createQuiz(requestDTO);
@@ -52,6 +54,7 @@ public class QuizController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<QuizResponseDTO>> updateQuiz(
             @PathVariable UUID id,
             @Valid @RequestBody QuizRequestDTO requestDTO) {
@@ -60,12 +63,14 @@ public class QuizController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteQuiz(@PathVariable UUID id) {
         quizService.deleteQuiz(id);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.quiz.deleted")));
     }
 
     @PostMapping("/{quizId}/questions/{questionId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<QuizDetailResponseDTO>> addQuestionToQuiz(
             @PathVariable UUID quizId,
             @PathVariable UUID questionId) {
@@ -74,6 +79,7 @@ public class QuizController {
     }
 
     @DeleteMapping("/{quizId}/questions/{questionId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> removeQuestionFromQuiz(
             @PathVariable UUID quizId,
             @PathVariable UUID questionId) {

@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record RoleRequestDTO(
     
-    @NotNull(message = "Role name is required")
+    @NotNull(message = "{validation.role.name.notnull}")
     RoleEnum name
 ) {}

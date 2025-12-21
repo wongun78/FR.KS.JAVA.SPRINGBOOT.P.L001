@@ -10,20 +10,20 @@ import java.util.UUID;
 
 public record QuestionRequestDTO(
     
-    @NotBlank(message = "Content is required")
+    @NotBlank(message = "{validation.question.content.notblank}")
     String content,
     
-    @NotNull(message = "Type is required")
+    @NotNull(message = "{validation.question.type.notnull}")
     QuestionTypeEnum type,
     
-    @NotNull(message = "Score is required")
-    @Min(value = 1, message = "Score must be at least 1")
+    @NotNull(message = "{validation.question.score.notnull}")
+    @Min(value = 1, message = "{validation.question.score.min}")
     Integer score,
     
-    @NotNull(message = "Quiz ID is required")
+    @NotNull(message = "{validation.question.quizid.notnull}")
     UUID quizId,
     
-    @NotEmpty(message = "At least one answer is required")
+    @NotEmpty(message = "{validation.question.answers.notempty}")
     @Valid
     List<AnswerRequestDTO> answers
 ) {}

@@ -85,6 +85,7 @@ public class DataInitializer {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setFullName("Admin User");
             admin.setActive(true);
+            admin.setRefreshToken(null); // Will be set on login
             admin.setRoles(Set.of(adminRole, userRole));
             userRepository.save(admin);
             log.info("Created user: {} (admin)", admin.getEmail());
@@ -95,6 +96,7 @@ public class DataInitializer {
             user.setPassword(passwordEncoder.encode("user123"));
             user.setFullName("Test User");
             user.setActive(true);
+            user.setRefreshToken(null); // Will be set on login
             user.setRoles(Set.of(userRole));
             userRepository.save(user);
             log.info("Created user: {} (user)", user.getEmail());

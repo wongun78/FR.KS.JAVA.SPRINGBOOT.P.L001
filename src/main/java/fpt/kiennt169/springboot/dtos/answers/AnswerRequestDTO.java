@@ -4,9 +4,9 @@ import jakarta.validation.constraints.*;
 
 public record AnswerRequestDTO(
     
-    @NotBlank(message = "Content is required")
+    @NotBlank(message = "{validation.answer.content.notblank}")
     String content,
     
-    @NotNull(message = "IsCorrect flag is required")
+    @NotNull(message = "{validation.answer.iscorrect.notnull}")
     Boolean isCorrect
 ) {}
