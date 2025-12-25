@@ -1,5 +1,6 @@
 package fpt.kiennt169.springboot.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,9 +15,12 @@ import fpt.kiennt169.springboot.entities.Question;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
     
-    @EntityGraph(attributePaths = {"answers", "quiz"})
+    @EntityGraph(attributePaths = {"answers", "quizzes"})
     Optional<Question> findById(UUID id);
     
-    @EntityGraph(attributePaths = {"answers", "quiz"})
+    @EntityGraph(attributePaths = {"answers", "quizzes"})
     Page<Question> findAll(Pageable pageable);
+    
+    @EntityGraph(attributePaths = {"answers", "quizzes"})
+    List<Question> findByQuizzesId(UUID quizId);
 }

@@ -11,11 +11,10 @@ import java.util.UUID;
 @Mapper(componentModel = "spring", uses = {AnswerMapper.class})
 public interface QuestionMapper {
  
-    @Mapping(source = "quiz.id", target = "quizId")
-    @Mapping(source = "quiz.title", target = "quizTitle")
+    @Mapping(target = "quizzes", expression = "java(mapQuizzesToDTO(question.getQuizzes()))")
     QuestionResponseDTO toResponseDTO(Question question);
  
-    @Mapping(target = "quiz", source = "quizId")  
+    @Mapping(target = "quizzes", ignore = true)  
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "answers", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -23,16 +22,16 @@ public interface QuestionMapper {
     @Mapping(target = "deleted", ignore = true)
     Question toEntity(QuestionRequestDTO requestDTO);
 
-    @InheritConfiguration(name = "toEntity")
+    @Mapping(target = "quizzes", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDTO(QuestionRequestDTO requestDTO, @MappingTarget Question question);
 
-    default Quiz mapIdToQuiz(UUID quizId) {
-        if (quizId == null) {
-            return null;
+    default java.util.List<QuestionResponseDTO.QuizInfoDTO> mapQuizzesToDTO(java.util.List<Quiz> quizzes) {
+        if (quizzes == null || quizzes.isEmpty()) {
+            return java.util.Collections.emptyList();
         }
-        Quiz quiz = new Quiz();
-        quiz.setId(quizId);
-        return quiz;
+        return quizzes.stream()
+            .map(quiz -> new QuestionResponseDTO.QuizInfoDTO(quiz.getId(), quiz.getTitle()))
+            .collect(java.util.stream.Collectors.toList());
     }
 }

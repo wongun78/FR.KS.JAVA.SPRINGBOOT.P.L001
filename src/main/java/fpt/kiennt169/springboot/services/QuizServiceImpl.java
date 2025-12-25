@@ -59,7 +59,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
     public QuizDetailResponseDTO getQuizWithQuestions(UUID id) {
-        Quiz quiz = quizRepository.findById(id)
+        Quiz quiz = quizRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
         return quizMapper.toDetailResponseDTO(quiz);
     }
@@ -91,10 +91,36 @@ public class QuizServiceImpl implements QuizService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
         
-        question.setQuiz(quiz);
-        questionRepository.save(question);
+        // Add question to quiz if not already present
+        if (!quiz.getQuestions().contains(question)) {
+            quiz.getQuestions().add(question);
+            quizRepository.save(quiz);
+        }
         
-        Quiz updatedQuiz = quizRepository.findById(quizId)
+        Quiz updatedQuiz = quizRepository.findWithDetailsById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
+        
+        return quizMapper.toDetailResponseDTO(updatedQuiz);
+    }
+
+    @Override
+    public QuizDetailResponseDTO addQuestionsToQuiz(UUID quizId, java.util.List<UUID> questionIds) {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
+        
+        for (UUID questionId : questionIds) {
+            Question question = questionRepository.findById(questionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+            
+            // Add question to quiz if not already present
+            if (!quiz.getQuestions().contains(question)) {
+                quiz.getQuestions().add(question);
+            }
+        }
+        
+        quizRepository.save(quiz);
+        
+        Quiz updatedQuiz = quizRepository.findWithDetailsById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         
         return quizMapper.toDetailResponseDTO(updatedQuiz);
@@ -102,17 +128,19 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     public void removeQuestionFromQuiz(UUID quizId, UUID questionId) {
-        if (!quizRepository.existsById(quizId)) {
-            throw new ResourceNotFoundException("Quiz", "id", quizId);
-        }
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
         
-        if (!question.getQuiz().getId().equals(quizId)) {
+        // Check if question belongs to this quiz
+        if (!quiz.getQuestions().contains(question)) {
             throw new QuestionNotBelongToQuizException();
         }
         
-        questionRepository.deleteById(questionId);
+        // Remove question from quiz (not delete the question itself)
+        quiz.getQuestions().remove(question);
+        quizRepository.save(quiz);
     }
 }

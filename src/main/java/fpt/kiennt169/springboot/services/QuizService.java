@@ -23,5 +23,7 @@ public interface QuizService {
     
     QuizDetailResponseDTO addQuestionToQuiz(UUID quizId, UUID questionId);
     
+    QuizDetailResponseDTO addQuestionsToQuiz(UUID quizId, java.util.List<UUID> questionIds);
+    
     void removeQuestionFromQuiz(UUID quizId, UUID questionId);
 }

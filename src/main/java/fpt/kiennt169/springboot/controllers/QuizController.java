@@ -78,6 +78,15 @@ public class QuizController {
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.question_added")));
     }
 
+    @PostMapping("/{quizId}/questions")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<QuizDetailResponseDTO>> addQuestionsToQuiz(
+            @PathVariable UUID quizId,
+            @RequestBody java.util.List<UUID> questionIds) {
+        QuizDetailResponseDTO response = quizService.addQuestionsToQuiz(quizId, questionIds);
+        return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.questions_added")));
+    }
+
     @DeleteMapping("/{quizId}/questions/{questionId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> removeQuestionFromQuiz(

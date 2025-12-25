@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-//Schema for API responses
+@Schema(description = "Standard API response wrapper")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,17 +21,23 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
+    @Schema(description = "Response timestamp", example = "2025-12-23T15:21:45")
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
+    @Schema(description = "HTTP status code", example = "200")
     private int status;
 
+    @Schema(description = "Response message", example = "Operation successful")
     private String message;
 
+    @Schema(description = "Response data payload")
     private T data;
 
+    @Schema(description = "Validation or error details")
     private Object errors;
 
+    @Schema(description = "Request path", example = "/api/v1/auth/login")
     private String path;
 
     /**

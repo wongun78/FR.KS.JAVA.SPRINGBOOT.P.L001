@@ -11,7 +11,11 @@ public record QuestionResponseDTO(
     String content,
     QuestionTypeEnum type,
     Integer score,
-    UUID quizId,
-    String quizTitle,
+    List<QuizInfoDTO> quizzes,
     List<AnswerResponseDTO> answers
-) {}
+) {
+    public record QuizInfoDTO(
+        UUID id,
+        String title
+    ) {}
+}

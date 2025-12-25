@@ -34,17 +34,34 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public QuestionResponseDTO createQuestion(QuestionRequestDTO requestDTO) {
-        if (!quizRepository.existsById(requestDTO.quizId())) {
-            throw new ResourceNotFoundException("Quiz", "id", requestDTO.quizId());
+        // Validate all quiz IDs if provided
+        if (requestDTO.quizIds() != null && !requestDTO.quizIds().isEmpty()) {
+            for (UUID quizId : requestDTO.quizIds()) {
+                if (!quizRepository.existsById(quizId)) {
+                    throw new ResourceNotFoundException("Quiz", "id", quizId);
+                }
+            }
         }
         
         Question question = questionMapper.toEntity(requestDTO);
         Question savedQuestion = questionRepository.save(question);
+        final UUID savedQuestionId = savedQuestion.getId();
         
+        // Link question to quizzes
+        if (requestDTO.quizIds() != null && !requestDTO.quizIds().isEmpty()) {
+            for (UUID quizId : requestDTO.quizIds()) {
+                fpt.kiennt169.springboot.entities.Quiz quiz = quizRepository.findById(quizId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
+                quiz.getQuestions().add(savedQuestion);
+                quizRepository.save(quiz);
+            }
+        }
+        
+        final Question finalQuestion = savedQuestion;
         List<Answer> answers = requestDTO.answers().stream()
                 .map(answerDTO -> {
                     Answer answer = answerMapper.toEntity(answerDTO);
-                    answer.setQuestion(savedQuestion);
+                    answer.setQuestion(finalQuestion);
                     return answer;
                 })
                 .collect(Collectors.toList());
@@ -52,7 +69,11 @@ public class QuestionServiceImpl implements QuestionService {
         answerRepository.saveAll(answers);
         savedQuestion.setAnswers(answers);
         
-        return questionMapper.toResponseDTO(savedQuestion);
+        // Reload to get updated quizzes
+        Question reloadedQuestion = questionRepository.findById(savedQuestionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", savedQuestionId));
+        
+        return questionMapper.toResponseDTO(reloadedQuestion);
     }
 
     @Override
@@ -79,18 +100,46 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
         
-        if (requestDTO.quizId() != null && !quizRepository.existsById(requestDTO.quizId())) {
-            throw new ResourceNotFoundException("Quiz", "id", requestDTO.quizId());
+        // Validate all quiz IDs if provided
+        if (requestDTO.quizIds() != null && !requestDTO.quizIds().isEmpty()) {
+            for (UUID quizId : requestDTO.quizIds()) {
+                if (!quizRepository.existsById(quizId)) {
+                    throw new ResourceNotFoundException("Quiz", "id", quizId);
+                }
+            }
         }
         
         questionMapper.updateEntityFromDTO(requestDTO, question);
         
+        // Update quiz relationships if provided
+        if (requestDTO.quizIds() != null) {
+            // Remove question from all current quizzes
+            java.util.List<fpt.kiennt169.springboot.entities.Quiz> currentQuizzes = new java.util.ArrayList<>(question.getQuizzes());
+            for (fpt.kiennt169.springboot.entities.Quiz quiz : currentQuizzes) {
+                quiz.getQuestions().remove(question);
+                quizRepository.save(quiz);
+            }
+            
+            // Add question to new quizzes
+            if (!requestDTO.quizIds().isEmpty()) {
+                for (UUID quizId : requestDTO.quizIds()) {
+                    fpt.kiennt169.springboot.entities.Quiz quiz = quizRepository.findById(quizId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
+                    if (!quiz.getQuestions().contains(question)) {
+                        quiz.getQuestions().add(question);
+                        quizRepository.save(quiz);
+                    }
+                }
+            }
+        }
+        
         answerRepository.deleteAll(question.getAnswers());
         
+        final Question finalQuestion = question;
         List<Answer> newAnswers = requestDTO.answers().stream()
                 .map(answerDTO -> {
                     Answer answer = answerMapper.toEntity(answerDTO);
-                    answer.setQuestion(question);
+                    answer.setQuestion(finalQuestion);
                     return answer;
                 })
                 .collect(Collectors.toList());
@@ -99,7 +148,13 @@ public class QuestionServiceImpl implements QuestionService {
         question.setAnswers(newAnswers);
         
         Question updatedQuestion = questionRepository.save(question);
-        return questionMapper.toResponseDTO(updatedQuestion);
+        final UUID updatedQuestionId = updatedQuestion.getId();
+        
+        // Reload to get updated quizzes
+        Question reloadedQuestion = questionRepository.findById(updatedQuestionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", updatedQuestionId));
+        
+        return questionMapper.toResponseDTO(reloadedQuestion);
     }
 
     @Override

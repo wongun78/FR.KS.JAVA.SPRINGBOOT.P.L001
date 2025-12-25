@@ -17,10 +17,17 @@ import fpt.kiennt169.springboot.dtos.users.LoginRequestDTO;
 import fpt.kiennt169.springboot.dtos.users.RegisterRequestDTO;
 import fpt.kiennt169.springboot.services.AuthService;
 import fpt.kiennt169.springboot.util.MessageUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Tag(name = "Authentication", description = "Authentication management APIs - Login, Register, Token Refresh, Logout")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -33,8 +40,30 @@ public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     private static final int REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; 
 
+    @Operation(
+        summary = "User login",
+        description = "Authenticate user with email and password. Returns JWT access token (24h) and refresh token in HttpOnly cookie (7 days)"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Login successful",
+            content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Invalid credentials",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Validation error",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> login(
+            @Parameter(description = "Login credentials", required = true)
             @Valid @RequestBody LoginRequestDTO loginRequest) {
         log.info("Login request received for email: {}", loginRequest.getEmail());
         
@@ -45,8 +74,30 @@ public class AuthController {
                 .body(ApiResponse.success(response, messageUtil.getMessage("success.auth.login")));
     }
 
+    @Operation(
+        summary = "User registration",
+        description = "Register a new user account. Automatically assigns ROLE_USER. Returns JWT tokens."
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "User registered successfully",
+            content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Email already exists",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Validation error",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> register(
+            @Parameter(description = "Registration details", required = true)
             @Valid @RequestBody RegisterRequestDTO registerRequest) {
         log.info("Registration request received for email: {}", registerRequest.getEmail());
         
@@ -58,8 +109,25 @@ public class AuthController {
                 .body(ApiResponse.created(response, messageUtil.getMessage("success.auth.register")));
     }
     
+    @Operation(
+        summary = "Refresh access token",
+        description = "Get new access token using refresh token from HttpOnly cookie. Implements token rotation - returns new refresh token."
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Token refreshed successfully",
+            content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Invalid or expired refresh token",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
     @GetMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> refresh(
+            @Parameter(description = "Refresh token from HttpOnly cookie", hidden = true)
             @CookieValue(name = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken) {
         log.info("Token refresh request received");
         
@@ -70,6 +138,21 @@ public class AuthController {
                 .body(ApiResponse.success(response, messageUtil.getMessage("success.auth.refresh")));
     }
     
+    @Operation(
+        summary = "User logout",
+        description = "Logout current user. Invalidates refresh token in database and deletes HttpOnly cookie."
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Logout successful"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Invalid or missing access token",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
         log.info("Logout request received");

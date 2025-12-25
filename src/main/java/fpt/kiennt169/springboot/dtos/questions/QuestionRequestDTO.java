@@ -20,8 +20,7 @@ public record QuestionRequestDTO(
     @Min(value = 1, message = "{validation.question.score.min}")
     Integer score,
     
-    @NotNull(message = "{validation.question.quizid.notnull}")
-    UUID quizId,
+    List<UUID> quizIds,
     
     @NotEmpty(message = "{validation.question.answers.notempty}")
     @Valid

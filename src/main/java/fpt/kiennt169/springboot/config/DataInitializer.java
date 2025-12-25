@@ -250,8 +250,12 @@ public class DataInitializer {
         question.setContent(content);
         question.setType(type);
         question.setScore(score);
-        question.setQuiz(quiz);
         question = questionRepository.save(question);
+        
+        // Add question to quiz (Many-to-Many relationship)
+        quiz.getQuestions().add(question);
+        quizRepository.save(quiz);
+        
         log.info("  - Created question: {} (Score: {})", content, score);
         return question;
     }

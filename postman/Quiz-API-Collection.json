@@ -1,9 +1,19 @@
 {
   "info": {
-    "_postman_id": "quiz-api-collection",
-    "name": "Quiz Application API",
-    "description": "Complete REST API collection for Quiz Application - Questions, Quizzes, Users, and Exam endpoints",
+    "_postman_id": "quiz-api-collection-v2",
+    "name": "Quiz Application API v2 (With Auth)",
+    "description": "Complete REST API collection with JWT Authentication - Login, Register, Refresh Token, Logout, Questions, Quizzes, Users, and Exam endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
   },
   "item": [
     {
@@ -19,12 +29,12 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set(\"accessToken\", jsonData.data.token);",
-                  "        console.log(\"Access token saved to environment\");",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.data.token);",
+                  "        console.log(\"✅ Access token saved:\", jsonData.data.token.substring(0, 20) + \"...\");",
                   "    }",
                   "    if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
-                  "        pm.environment.set(\"userId\", jsonData.data.user.id);",
-                  "        console.log(\"User ID saved to environment\");",
+                  "        pm.collectionVariables.set(\"userId\", jsonData.data.user.id);",
+                  "        console.log(\"✅ User ID saved:\", jsonData.data.user.id);",
                   "    }",
                   "}"
                 ],
@@ -33,6 +43,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -49,7 +62,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Login with email and password. Returns access token (in body) and refresh token (in HttpOnly cookie)."
+            "description": "🔐 Login with email and password\n\n**Credentials:**\n- Admin: admin@quiz.com / admin123\n- User: user@quiz.com / user123\n\n**Response:**\n- Access Token (24h) - in body\n- Refresh Token (7 days) - in HttpOnly cookie\n\n**Auto-saves:**\n- Access token to {{accessToken}}\n- User ID to {{userId}}"
           },
           "response": []
         },
@@ -63,12 +76,12 @@
                   "if (pm.response.code === 201) {",
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set(\"accessToken\", jsonData.data.token);",
-                  "        console.log(\"Access token saved to environment\");",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.data.token);",
+                  "        console.log(\"✅ Access token saved:\", jsonData.data.token.substring(0, 20) + \"...\");",
                   "    }",
                   "    if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
-                  "        pm.environment.set(\"userId\", jsonData.data.user.id);",
-                  "        console.log(\"User ID saved to environment\");",
+                  "        pm.collectionVariables.set(\"userId\", jsonData.data.user.id);",
+                  "        console.log(\"✅ User ID saved:\", jsonData.data.user.id);",
                   "    }",
                   "}"
                 ],
@@ -77,6 +90,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -86,14 +102,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"New User\"\n}"
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Test User\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "register"]
             },
-            "description": "Register a new user account. Returns access token (in body) and refresh token (in HttpOnly cookie)."
+            "description": "📝 Register a new user account\n\n**Response:**\n- Access Token (24h) - in body\n- Refresh Token (7 days) - in HttpOnly cookie\n- User automatically assigned ROLE_USER\n\n**Auto-saves:**\n- Access token to {{accessToken}}\n- User ID to {{userId}}"
           },
           "response": []
         },
@@ -107,8 +123,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set(\"accessToken\", jsonData.data.token);",
-                  "        console.log(\"New access token saved to environment\");",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.data.token);",
+                  "        console.log(\"✅ New access token saved:\", jsonData.data.token.substring(0, 20) + \"...\");",
                   "    }",
                   "}"
                 ],
@@ -117,6 +133,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -124,23 +143,13 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "refresh"]
             },
-            "description": "Refresh access token using the refresh token stored in HttpOnly cookie. Returns new access token and new refresh token (token rotation)."
+            "description": "🔄 Refresh access token when expired\n\n**Flow:**\n1. Sends refresh token from HttpOnly cookie (automatic)\n2. Server validates refresh token from DB\n3. Generates NEW access token + NEW refresh token (rotation)\n4. Updates refresh token in DB\n5. Returns new tokens\n\n**Auto-saves:**\n- New access token to {{accessToken}}"
           },
           "response": []
         },
         {
           "name": "Logout",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [],
             "url": {
@@ -148,195 +157,18 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "logout"]
             },
-            "description": "Logout current user. Removes refresh token from database and deletes the HttpOnly cookie."
+            "description": "🚪 Logout current user\n\n**Actions:**\n- Removes refresh token from database\n- Deletes HttpOnly cookie\n- Client should delete access token\n\n**Requires:**\n- Valid access token in Authorization header"
           },
           "response": []
         }
-      ]
-    },
-    {
-      "name": "Questions",
-      "item": [
-        {
-          "name": "Create Question",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"content\": \"What is the capital of France?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 10,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Paris\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"London\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Berlin\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Madrid\",\n      \"isCorrect\": false\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/questions",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "questions"]
-            },
-            "description": "Create a new question with answers"
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Questions (Paginated)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/questions?page=0&size=10&sortBy=content&direction=asc",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "questions"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0",
-                  "description": "Page number (0-indexed)"
-                },
-                {
-                  "key": "size",
-                  "value": "10",
-                  "description": "Page size"
-                },
-                {
-                  "key": "sortBy",
-                  "value": "content",
-                  "description": "Sort field (id, content, type, score)"
-                },
-                {
-                  "key": "direction",
-                  "value": "asc",
-                  "description": "Sort direction (asc, desc)"
-                }
-              ]
-            },
-            "description": "Get all questions with pagination and sorting"
-          },
-          "response": []
-        },
-        {
-          "name": "Get Question by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "questions", "{{questionId}}"]
-            },
-            "description": "Get a specific question by ID"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Question",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"content\": \"What is the capital of Germany?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 15,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Berlin\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"Munich\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Hamburg\",\n      \"isCorrect\": false\n    },\n    {\n      \"content\": \"Frankfurt\",\n      \"isCorrect\": false\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "questions", "{{questionId}}"]
-            },
-            "description": "Update an existing question with answers"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Question",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "questions", "{{questionId}}"]
-            },
-            "description": "Delete a question by ID"
-          },
-          "response": []
-        }
-      ]
+      ],
+      "description": "Authentication endpoints for user management"
     },
     {
       "name": "Quizzes",
       "item": [
         {
-          "name": "Create Quiz",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Python Programming Basics\",\n  \"description\": \"Test your Python knowledge\",\n  \"durationMinutes\": 30,\n  \"active\": true\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/quizzes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quizzes"]
-            },
-            "description": "Create a new quiz"
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Quizzes (Paginated)",
+          "name": "Get All Quizzes",
           "request": {
             "method": "GET",
             "header": [],
@@ -354,8 +186,7 @@
                   "value": "10"
                 }
               ]
-            },
-            "description": "Get all quizzes with pagination"
+            }
           },
           "response": []
         },
@@ -368,24 +199,36 @@
               "raw": "{{baseUrl}}/api/v1/quizzes/{{quizId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "quizzes", "{{quizId}}"]
-            },
-            "description": "Get quiz details with questions"
+            }
           },
           "response": []
         },
         {
-          "name": "Update Quiz",
+          "name": "Create Quiz (Admin)",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python Programming\",\n  \"description\": \"Test your Python skills\",\n  \"durationMinutes\": 30,\n  \"active\": true\n}"
             },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/quizzes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quizzes"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Quiz (Admin)",
+          "request": {
             "method": "PUT",
             "header": [
               {
@@ -395,54 +238,34 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Advanced Python Programming\",\n  \"description\": \"Advanced Python topics\",\n  \"durationMinutes\": 60,\n  \"active\": true\n}"
+              "raw": "{\n  \"title\": \"Advanced Python\",\n  \"description\": \"Advanced topics\",\n  \"durationMinutes\": 60,\n  \"active\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/quizzes/{{quizId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "quizzes", "{{quizId}}"]
             },
-            "description": "Update an existing quiz"
+            "description": "🔒 Requires ADMIN role"
           },
           "response": []
         },
         {
-          "name": "Delete Quiz",
+          "name": "Get Quiz with Details",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/quizzes/{{quizId}}",
+              "raw": "{{baseUrl}}/api/v1/quizzes/{{quizId}}/details",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quizzes", "{{quizId}}"]
+              "path": ["api", "v1", "quizzes", "{{quizId}}", "details"]
             },
-            "description": "Delete a quiz by ID"
+            "description": "📋 Get quiz details with all questions and answers\n\n**Use this endpoint to:**\n- Display quiz for taking exam\n- Show all questions with answer choices\n- Get complete quiz structure\n\n**Response includes:**\n- Quiz metadata (title, description, duration)\n- All questions with answers\n- Question types and scores"
           },
           "response": []
         },
         {
-          "name": "Add Question to Quiz",
+          "name": "Add Question to Quiz (Admin)",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [],
             "url": {
@@ -457,23 +280,13 @@
                 "{{questionId}}"
               ]
             },
-            "description": "Add an existing question to a quiz"
+            "description": "🔒 Requires ADMIN role\n\nAdd an existing question to a quiz"
           },
           "response": []
         },
         {
-          "name": "Remove Question from Quiz",
+          "name": "Remove Question from Quiz (Admin)",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -488,17 +301,67 @@
                 "{{questionId}}"
               ]
             },
-            "description": "Remove a question from a quiz"
+            "description": "🔒 Requires ADMIN role\n\nRemove a question from a quiz"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Quiz (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/quizzes/{{quizId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quizzes", "{{quizId}}"]
+            },
+            "description": "🔒 Requires ADMIN role"
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Users",
+      "name": "Questions",
       "item": [
         {
-          "name": "Create User",
+          "name": "Get All Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/questions?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "questions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Question by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "questions", "{{questionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Question (Admin)",
           "request": {
             "method": "POST",
             "header": [
@@ -509,19 +372,61 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"New User\",\n  \"active\": true,\n  \"roleIds\": [\"{{roleId}}\"]\n}"
+              "raw": "{\n  \"content\": \"What is Python?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 10,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Programming language\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"Snake species\",\n      \"isCorrect\": false\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/users",
+              "raw": "{{baseUrl}}/api/v1/questions",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "users"]
+              "path": ["api", "v1", "questions"]
             },
-            "description": "Create a new user"
+            "description": "🔒 Requires ADMIN role"
           },
           "response": []
         },
         {
-          "name": "Get All Users (Paginated)",
+          "name": "Update Question (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"What is Java?\",\n  \"type\": \"SINGLE_CHOICE\",\n  \"score\": 15,\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"content\": \"Programming language\",\n      \"isCorrect\": true\n    },\n    {\n      \"content\": \"Coffee type\",\n      \"isCorrect\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "questions", "{{questionId}}"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Question (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/questions/{{questionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "questions", "{{questionId}}"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users (Admin)",
           "request": {
             "method": "GET",
             "header": [],
@@ -540,12 +445,12 @@
                 }
               ]
             },
-            "description": "Get all users with pagination"
+            "description": "🔒 Requires ADMIN role"
           },
           "response": []
         },
         {
-          "name": "Get User by ID",
+          "name": "Get User by ID (Admin)",
           "request": {
             "method": "GET",
             "header": [],
@@ -554,68 +459,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "users", "{{userId}}"]
             },
-            "description": "Get a specific user by ID"
+            "description": "🔒 Requires ADMIN role"
           },
           "response": []
         },
         {
-          "name": "Get User by Email",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/users/email/admin@quiz.com",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "users", "email", "admin@quiz.com"]
-            },
-            "description": "Get user by email address"
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"updated@example.com\",\n  \"password\": \"newpassword123\",\n  \"fullName\": \"Updated Name\",\n  \"active\": true,\n  \"roleIds\": [\"{{roleId}}\"]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "users", "{{userId}}"]
-            },
-            "description": "Update an existing user"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "users", "{{userId}}"]
-            },
-            "description": "Delete a user by ID"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Exam",
-      "item": [
-        {
-          "name": "Submit Exam",
+          "name": "Create User (Admin)",
           "request": {
             "method": "POST",
             "header": [
@@ -626,18 +475,109 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"questionId\": \"{{questionId}}\",\n      \"answerIds\": [\"{{answerId1}}\"]\n    },\n    {\n      \"questionId\": \"{{questionId2}}\",\n      \"answerIds\": [\"{{answerId2}}\", \"{{answerId3}}\"]\n    }\n  ]\n}"
+              "raw": "{\n  \"email\": \"newadmin@quiz.com\",\n  \"password\": \"admin123\",\n  \"fullName\": \"New Admin\",\n  \"active\": true,\n  \"roleIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"updated@quiz.com\",\n  \"password\": \"newpass123\",\n  \"fullName\": \"Updated Name\",\n  \"active\": true,\n  \"roleIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "🔒 Requires ADMIN role"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Exam",
+      "item": [
+        {
+          "name": "Submit Exam",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.submissionId) {",
+                  "        pm.collectionVariables.set(\"submissionId\", jsonData.data.submissionId);",
+                  "        console.log(\"✅ Submission ID saved:\", jsonData.data.submissionId);",
+                  "    }",
+                  "    if (jsonData.data) {",
+                  "        console.log(\"📊 Exam Result:\");",
+                  "        console.log(\"   Score: \" + jsonData.data.achievedScore + \"/\" + jsonData.data.totalScore);",
+                  "        console.log(\"   Percentage: \" + jsonData.data.percentage.toFixed(2) + \"%\");",
+                  "        console.log(\"   Status: \" + (jsonData.data.passed ? \"✅ PASSED\" : \"❌ FAILED\"));",
+                  "        console.log(\"   Correct: \" + jsonData.data.correctAnswers);",
+                  "        console.log(\"   Wrong: \" + jsonData.data.wrongAnswers);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    {\n      \"questionId\": \"{{questionId}}\",\n      \"answerIds\": [\"{{answerId}}\"]\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/exam/submit",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "exam", "submit"]
             },
-            "description": "Submit exam answers and get results with scoring"
+            "description": "📝 Submit exam answers and get immediate results\n\n**Request Body:**\n- userId: User taking the exam\n- quizId: Quiz being taken\n- answers: Array of question-answer pairs\n  - questionId: Question ID\n  - answerIds: Array of selected answer IDs\n\n**Response:**\n- Detailed results with score, percentage, pass/fail\n- Individual question results\n- Saves submission to database\n\n**Scoring Logic:**\n- Single Choice: Must select exactly 1 correct answer\n- Multiple Choice: Must select ALL correct answers (no partial credit)\n- Pass threshold: 50%\n\n**Auto-saves:**\n- Submission ID to {{submissionId}}\n- Prints score summary to console\n\n**Example:**\nFor a quiz with 3 questions (scores: 5, 10, 5):\n- Total Score: 20\n- If correct: 2/3 questions\n- Achieved: 15/20 (75%) - PASSED ✅"
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Exam submission and grading endpoints"
     }
   ],
   "variable": [
@@ -652,12 +592,7 @@
       "type": "string"
     },
     {
-      "key": "questionId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "questionId2",
+      "key": "userId",
       "value": "",
       "type": "string"
     },
@@ -667,27 +602,17 @@
       "type": "string"
     },
     {
-      "key": "userId",
+      "key": "questionId",
       "value": "",
       "type": "string"
     },
     {
-      "key": "roleId",
+      "key": "answerId",
       "value": "",
       "type": "string"
     },
     {
-      "key": "answerId1",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "answerId2",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "answerId3",
+      "key": "submissionId",
       "value": "",
       "type": "string"
     }
