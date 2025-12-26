@@ -75,7 +75,25 @@ APP_ENV=development
 - Change default database password in production
 - Generate new secret: `openssl rand -base64 64`
 
-### Option 1: Run with Docker Compose (Recommended)
+### Option 1: Run Locally with Docker DB (Recommended for Development)
+
+```bash
+# 1. Make sure .env file exists
+cp .env.example .env
+
+# 2. Start PostgreSQL only
+docker compose up -d postgres
+
+# 3. Load environment variables and run application
+export $(cat .env | grep -v '^#' | xargs) && ./gradlew bootRun
+
+# Application will be available at:
+# - API: http://localhost:8080
+# - Swagger UI: http://localhost:8080/swagger-ui.html
+# - Database: localhost:5432
+```
+
+### Option 2: Run with Docker Compose (Full Stack)
 
 ```bash
 # Build and start all services
@@ -87,19 +105,8 @@ docker compose up --build
 # - Database: localhost:5432
 ```
 
-### Option 2: Run Locally (Development)
-
-```bash
-# 1. Make sure .env file exists
-cp .env.example .env
-
-# 2. Start PostgreSQL only
-docker compose up -d postgres
-
-# 3. Run application
-./gradlew bootRun
-
 # Or use VS Code "Run: Application" task
+
 ```
 
 ## 📚 API Documentation
@@ -114,13 +121,17 @@ Once the application is running, access:
 ### Default Credentials
 
 ```
+
 Admin Account:
+
 - Email: admin@quiz.com
 - Password: admin123
 
 User Account:
+
 - Email: user@quiz.com
 - Password: user123
+
 ```
 
 ### API Endpoints Summary
@@ -128,50 +139,60 @@ User Account:
 #### Authentication (Public)
 
 ```
-POST   /api/v1/auth/login      - Login with email/password
-POST   /api/v1/auth/register   - Register new user
-GET    /api/v1/auth/refresh    - Refresh access token
-POST   /api/v1/auth/logout     - Logout (invalidate refresh token)
+
+POST /api/v1/auth/login - Login with email/password
+POST /api/v1/auth/register - Register new user
+GET /api/v1/auth/refresh - Refresh access token
+POST /api/v1/auth/logout - Logout (invalidate refresh token)
+
 ```
 
 #### Questions (Protected)
 
 ```
-POST   /api/v1/questions       - Create question (ADMIN only)
-GET    /api/v1/questions       - Get all questions (paginated)
-GET    /api/v1/questions/{id}  - Get question by ID
-PUT    /api/v1/questions/{id}  - Update question (ADMIN only)
-DELETE /api/v1/questions/{id}  - Delete question (ADMIN only)
+
+POST /api/v1/questions - Create question (ADMIN only)
+GET /api/v1/questions - Get all questions (paginated)
+GET /api/v1/questions/{id} - Get question by ID
+PUT /api/v1/questions/{id} - Update question (ADMIN only)
+DELETE /api/v1/questions/{id} - Delete question (ADMIN only)
+
 ```
 
 #### Quizzes (Protected)
 
 ```
-POST   /api/v1/quizzes                           - Create quiz (ADMIN only)
-GET    /api/v1/quizzes                           - Get all quizzes (paginated)
-GET    /api/v1/quizzes/{id}                      - Get quiz by ID
-GET    /api/v1/quizzes/{id}/details              - Get quiz with questions
-PUT    /api/v1/quizzes/{id}                      - Update quiz (ADMIN only)
-DELETE /api/v1/quizzes/{id}                      - Delete quiz (ADMIN only)
-POST   /api/v1/quizzes/{quizId}/questions/{qId}  - Add question to quiz (ADMIN only)
-DELETE /api/v1/quizzes/{quizId}/questions/{qId}  - Remove question from quiz (ADMIN only)
+
+POST /api/v1/quizzes - Create quiz (ADMIN only)
+GET /api/v1/quizzes - Get all quizzes (paginated)
+GET /api/v1/quizzes/{id} - Get quiz by ID
+GET /api/v1/quizzes/{id}/details - Get quiz with questions
+PUT /api/v1/quizzes/{id} - Update quiz (ADMIN only)
+DELETE /api/v1/quizzes/{id} - Delete quiz (ADMIN only)
+POST /api/v1/quizzes/{quizId}/questions/{qId} - Add question to quiz (ADMIN only)
+DELETE /api/v1/quizzes/{quizId}/questions/{qId} - Remove question from quiz (ADMIN only)
+
 ```
 
 #### Users (Protected)
 
 ```
-POST   /api/v1/users            - Create user (ADMIN only)
-GET    /api/v1/users            - Get all users (ADMIN only, paginated)
-GET    /api/v1/users/{id}       - Get user by ID
-GET    /api/v1/users/email/{e}  - Get user by email
-PUT    /api/v1/users/{id}       - Update user
-DELETE /api/v1/users/{id}       - Delete user (ADMIN only)
+
+POST /api/v1/users - Create user (ADMIN only)
+GET /api/v1/users - Get all users (ADMIN only, paginated)
+GET /api/v1/users/{id} - Get user by ID
+GET /api/v1/users/email/{e} - Get user by email
+PUT /api/v1/users/{id} - Update user
+DELETE /api/v1/users/{id} - Delete user (ADMIN only)
+
 ```
 
 #### Exam (Protected)
 
 ```
-POST   /api/v1/exam/submit      - Submit exam and get results
+
+POST /api/v1/exam/submit - Submit exam and get results
+
 ```
 
 ## 🔐 Authentication Flow
@@ -191,9 +212,11 @@ POST   /api/v1/exam/submit      - Submit exam and get results
 ## 📊 Database Schema
 
 ```
+
 users ──< user_roles >── roles
-  │
-  └──< quiz_submissions >── quizzes ──< questions ──< answers
+│
+└──< quiz_submissions >── quizzes ──< questions ──< answers
+
 ```
 
 ### Key Tables
@@ -208,32 +231,34 @@ users ──< user_roles >── roles
 ## 🏗️ Project Structure
 
 ```
+
 src/main/java/fpt/kiennt169/springboot/
-├── config/           # Security, JPA, JWT configurations
-├── constants/        # Application constants
-├── controllers/      # REST Controllers
-├── dtos/            # Data Transfer Objects (Records)
-│   ├── answers/
-│   ├── questions/
-│   ├── quizzes/
-│   ├── users/
-│   └── submissions/
-├── entities/        # JPA Entities
-├── enums/           # Enumerations
-├── exceptions/      # Custom exceptions & Global handler
-├── mappers/         # MapStruct mappers
-├── repositories/    # JPA Repositories
-├── services/        # Business logic
-├── util/            # Utilities (MessageUtil, JwtUtil)
-└── validation/      # Custom validators
+├── config/ # Security, JPA, JWT configurations
+├── constants/ # Application constants
+├── controllers/ # REST Controllers
+├── dtos/ # Data Transfer Objects (Records)
+│ ├── answers/
+│ ├── questions/
+│ ├── quizzes/
+│ ├── users/
+│ └── submissions/
+├── entities/ # JPA Entities
+├── enums/ # Enumerations
+├── exceptions/ # Custom exceptions & Global handler
+├── mappers/ # MapStruct mappers
+├── repositories/ # JPA Repositories
+├── services/ # Business logic
+├── util/ # Utilities (MessageUtil, JwtUtil)
+└── validation/ # Custom validators
 
 src/main/resources/
-├── i18n/                    # Internationalization files
-│   ├── messages.properties
-│   └── messages_vi.properties
-├── application.properties   # Configuration
-└── logback-spring.xml      # Logging configuration
-```
+├── i18n/ # Internationalization files
+│ ├── messages.properties
+│ └── messages_vi.properties
+├── application.properties # Configuration
+└── logback-spring.xml # Logging configuration
+
+````
 
 ## 🧪 Testing
 
@@ -276,21 +301,21 @@ src/main/resources/
 
 ### Code Quality Standards
 
-✅ **Layered Architecture**: Controller → Service → Repository  
-✅ **Constructor Injection**: No @Autowired field injection  
-✅ **Java Records**: Used for all DTOs  
-✅ **Interface-based Services**: Service interfaces + Impl classes  
-✅ **Soft Delete**: All entities extend BaseEntity with `deleted` flag  
-✅ **JPA Auditing**: @CreatedDate, @LastModifiedDate automatic  
-✅ **Transaction Management**: @Transactional at service layer  
+✅ **Layered Architecture**: Controller → Service → Repository
+✅ **Constructor Injection**: No @Autowired field injection
+✅ **Java Records**: Used for all DTOs
+✅ **Interface-based Services**: Service interfaces + Impl classes
+✅ **Soft Delete**: All entities extend BaseEntity with `deleted` flag
+✅ **JPA Auditing**: @CreatedDate, @LastModifiedDate automatic
+✅ **Transaction Management**: @Transactional at service layer
 ✅ **N+1 Prevention**: @EntityGraph for eager loading
 
 ### Security Features
 
-✅ **Stateless JWT**: No session storage  
-✅ **Refresh Token Rotation**: New token on each refresh  
-✅ **BCrypt Password**: Strength 10  
-✅ **RBAC**: Method-level security with @PreAuthorize  
+✅ **Stateless JWT**: No session storage
+✅ **Refresh Token Rotation**: New token on each refresh
+✅ **BCrypt Password**: Strength 10
+✅ **RBAC**: Method-level security with @PreAuthorize
 ✅ **CORS**: Configurable allowed origins
 
 ## 🎓 Assignment Completion
@@ -340,7 +365,7 @@ docker compose down
 
 # Clean up (including volumes)
 docker compose down -v
-```
+````
 
 ## 📄 License
 
