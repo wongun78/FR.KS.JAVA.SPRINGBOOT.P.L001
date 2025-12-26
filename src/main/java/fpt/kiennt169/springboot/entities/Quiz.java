@@ -30,7 +30,7 @@ public class Quiz extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = false;
     
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "quiz_questions",
         joinColumns = @JoinColumn(name = "quiz_id"),

@@ -91,16 +91,9 @@ public class QuizServiceImpl implements QuizService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
         
-        // Add question to quiz if not already present
-        if (!quiz.getQuestions().contains(question)) {
-            quiz.getQuestions().add(question);
-            quizRepository.save(quiz);
-        }
+        addQuestionIfNotExists(quiz, question);
         
-        Quiz updatedQuiz = quizRepository.findWithDetailsById(quizId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
-        
-        return quizMapper.toDetailResponseDTO(updatedQuiz);
+        return getQuizWithDetails(quizId);
     }
 
     @Override
@@ -111,19 +104,10 @@ public class QuizServiceImpl implements QuizService {
         for (UUID questionId : questionIds) {
             Question question = questionRepository.findById(questionId)
                     .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
-            
-            // Add question to quiz if not already present
-            if (!quiz.getQuestions().contains(question)) {
-                quiz.getQuestions().add(question);
-            }
+            addQuestionIfNotExists(quiz, question);
         }
         
-        quizRepository.save(quiz);
-        
-        Quiz updatedQuiz = quizRepository.findWithDetailsById(quizId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
-        
-        return quizMapper.toDetailResponseDTO(updatedQuiz);
+        return getQuizWithDetails(quizId);
     }
 
     @Override
@@ -134,13 +118,25 @@ public class QuizServiceImpl implements QuizService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
         
-        // Check if question belongs to this quiz
         if (!quiz.getQuestions().contains(question)) {
             throw new QuestionNotBelongToQuizException();
         }
         
-        // Remove question from quiz (not delete the question itself)
         quiz.getQuestions().remove(question);
         quizRepository.save(quiz);
+    }
+    
+    // Helper methods to reduce code duplication
+    private void addQuestionIfNotExists(Quiz quiz, Question question) {
+        if (!quiz.getQuestions().contains(question)) {
+            quiz.getQuestions().add(question);
+            quizRepository.save(quiz);
+        }
+    }
+    
+    private QuizDetailResponseDTO getQuizWithDetails(UUID quizId) {
+        Quiz quiz = quizRepository.findWithDetailsById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
+        return quizMapper.toDetailResponseDTO(quiz);
     }
 }

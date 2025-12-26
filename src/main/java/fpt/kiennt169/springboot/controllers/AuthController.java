@@ -63,14 +63,14 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> login(
-            @Parameter(description = "Login credentials", required = true)
+            @Parameter(description = "Login credentials")
             @Valid @RequestBody LoginRequestDTO loginRequest) {
-        log.info("Login request received for email: {}", loginRequest.getEmail());
+        log.info("Login request received for email: {}", loginRequest.email());
         
         AuthResponseDTO response = authService.login(loginRequest);
         
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.getRefreshToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.refreshToken()).toString())
                 .body(ApiResponse.success(response, messageUtil.getMessage("success.auth.login")));
     }
 
@@ -97,15 +97,15 @@ public class AuthController {
     })
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> register(
-            @Parameter(description = "Registration details", required = true)
+            @Parameter(description = "Registration details")
             @Valid @RequestBody RegisterRequestDTO registerRequest) {
-        log.info("Registration request received for email: {}", registerRequest.getEmail());
+        log.info("Registration request received for email: {}", registerRequest.email());
         
         AuthResponseDTO response = authService.register(registerRequest);
         
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.getRefreshToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.refreshToken()).toString())
                 .body(ApiResponse.created(response, messageUtil.getMessage("success.auth.register")));
     }
     
@@ -134,7 +134,7 @@ public class AuthController {
         AuthResponseDTO response = authService.refresh(refreshToken);
         
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.getRefreshToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(response.refreshToken()).toString())
                 .body(ApiResponse.success(response, messageUtil.getMessage("success.auth.refresh")));
     }
     

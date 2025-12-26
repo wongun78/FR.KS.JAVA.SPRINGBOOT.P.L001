@@ -61,7 +61,7 @@ public class ExamController {
     })
     @PostMapping("/submit")
     public ResponseEntity<ApiResponse<ExamResultResponseDTO>> submitExam(
-            @Parameter(description = "Exam submission with user ID, quiz ID, and answers", required = true)
+            @Parameter(description = "Exam submission with user ID, quiz ID, and answers")
             @Valid @RequestBody ExamSubmissionRequestDTO requestDTO) {
         
         log.info("Received exam submission request from user: {} for quiz: {}", 

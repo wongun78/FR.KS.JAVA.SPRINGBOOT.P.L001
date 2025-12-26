@@ -18,7 +18,7 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
     @EntityGraph(attributePaths = {"answers", "quizzes"})
     Optional<Question> findById(UUID id);
     
-    @EntityGraph(attributePaths = {"answers", "quizzes"})
+    @EntityGraph(attributePaths = {"answers"})
     Page<Question> findAll(Pageable pageable);
     
     @EntityGraph(attributePaths = {"answers", "quizzes"})

@@ -44,15 +44,7 @@ public class UserServiceImpl implements UserService {
             user.setActive(true);
         }
         
-        if (requestDTO.roleIds() != null && !requestDTO.roleIds().isEmpty()) {
-            Set<Role> roles = new HashSet<>();
-            for (UUID roleId : requestDTO.roleIds()) {
-                Role role = roleRepository.findById(roleId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Role", "id", roleId));
-                roles.add(role);
-            }
-            user.setRoles(roles);
-        }
+        assignRolesToUser(user, requestDTO.roleIds());
         
         User savedUser = userRepository.save(user);
         return userMapper.toResponseDTO(savedUser);
@@ -99,15 +91,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(requestDTO.password()));
         }
         
-        if (requestDTO.roleIds() != null && !requestDTO.roleIds().isEmpty()) {
-            Set<Role> roles = new HashSet<>();
-            for (UUID roleId : requestDTO.roleIds()) {
-                Role role = roleRepository.findById(roleId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Role", "id", roleId));
-                roles.add(role);
-            }
-            user.setRoles(roles);
-        }
+        assignRolesToUser(user, requestDTO.roleIds());
         
         User updatedUser = userRepository.save(user);
         return userMapper.toResponseDTO(updatedUser);
@@ -119,5 +103,18 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("User", "id", id);
         }
         userRepository.deleteById(id);
+    }
+    
+    // Helper method to reduce code duplication
+    private void assignRolesToUser(User user, Set<UUID> roleIds) {
+        if (roleIds != null && !roleIds.isEmpty()) {
+            Set<Role> roles = new HashSet<>();
+            for (UUID roleId : roleIds) {
+                Role role = roleRepository.findById(roleId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Role", "id", roleId));
+                roles.add(role);
+            }
+            user.setRoles(roles);
+        }
     }
 }

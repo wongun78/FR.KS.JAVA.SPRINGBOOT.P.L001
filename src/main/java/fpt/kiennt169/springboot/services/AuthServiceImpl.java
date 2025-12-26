@@ -40,18 +40,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO loginRequest) {
-        log.debug("Attempting login for user: {}", loginRequest.getEmail());
+        log.debug("Attempting login for user: {}", loginRequest.email());
         
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getEmail(),
-                            loginRequest.getPassword()
+                            loginRequest.email(),
+                            loginRequest.password()
                     )
             );
 
-            User user = userRepository.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.getEmail()));
+            User user = userRepository.findByEmail(loginRequest.email())
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.email()));
 
             Set<String> roleNames = user.getRoles().stream()
                     .map(role -> role.getName().name())
@@ -66,16 +66,15 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("User logged in successfully: {}", user.getEmail());
 
-            return AuthResponseDTO.builder()
-                    .token(token)
-                    .refreshToken(refreshToken)
-                    .type("Bearer")
-                    .user(userMapper.toResponseDTO(user))
-                    .roles(roleNames)
-                    .build();
+            return new AuthResponseDTO(
+                    token,
+                    refreshToken,
+                    userMapper.toResponseDTO(user),
+                    roleNames
+            );
 
         } catch (BadCredentialsException e) {
-            log.warn("Failed login attempt for user: {}", loginRequest.getEmail());
+            log.warn("Failed login attempt for user: {}", loginRequest.email());
             throw new BadCredentialsException("Invalid email or password");
         }
     }
@@ -83,16 +82,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
-        log.debug("Attempting registration for email: {}", registerRequest.getEmail());
+        log.debug("Attempting registration for email: {}", registerRequest.email());
 
-        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new ResourceAlreadyExistsException("Email already registered: " + registerRequest.getEmail());
+        if (userRepository.findByEmail(registerRequest.email()).isPresent()) {
+            throw new ResourceAlreadyExistsException("Email already registered: " + registerRequest.email());
         }
 
         User user = new User();
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setFullName(registerRequest.getFullName());
+        user.setEmail(registerRequest.email());
+        user.setPassword(passwordEncoder.encode(registerRequest.password()));
+        user.setFullName(registerRequest.fullName());
         user.setActive(true);
 
         Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
@@ -116,13 +115,12 @@ public class AuthServiceImpl implements AuthService {
         savedUser.setRefreshToken(refreshToken);
         userRepository.save(savedUser);
 
-        return AuthResponseDTO.builder()
-                .token(token)
-                .refreshToken(refreshToken)
-                .type("Bearer")
-                .user(userMapper.toResponseDTO(savedUser))
-                .roles(roleNames)
-                .build();
+        return new AuthResponseDTO(
+                token,
+                refreshToken,
+                userMapper.toResponseDTO(savedUser),
+                roleNames
+        );
     }
     
     @Override
@@ -159,13 +157,12 @@ public class AuthServiceImpl implements AuthService {
         
         log.info("Token refreshed successfully for user: {}", user.getEmail());
         
-        return AuthResponseDTO.builder()
-                .token(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .type("Bearer")
-                .user(userMapper.toResponseDTO(user))
-                .roles(roleNames)
-                .build();
+        return new AuthResponseDTO(
+                newAccessToken,
+                newRefreshToken,
+                userMapper.toResponseDTO(user),
+                roleNames
+        );
     }
     
     @Override

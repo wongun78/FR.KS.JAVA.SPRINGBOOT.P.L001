@@ -6,8 +6,6 @@ import fpt.kiennt169.springboot.entities.Question;
 import fpt.kiennt169.springboot.entities.Quiz;
 import org.mapstruct.*;
 
-import java.util.UUID;
-
 @Mapper(componentModel = "spring", uses = {AnswerMapper.class})
 public interface QuestionMapper {
  

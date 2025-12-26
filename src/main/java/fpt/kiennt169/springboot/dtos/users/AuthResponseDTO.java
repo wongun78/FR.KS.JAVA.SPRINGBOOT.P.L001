@@ -1,25 +1,21 @@
 package fpt.kiennt169.springboot.dtos.users;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Set;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponseDTO {
-
-    private String token;
+@Schema(description = "Authentication response with JWT tokens and user details")
+public record AuthResponseDTO(
     
-    private String refreshToken;
+    @Schema(description = "JWT access token (24h validity)", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    String token,
     
-    @Builder.Default
-    private String type = "Bearer";
+    @Schema(description = "JWT refresh token (7 days validity, HttpOnly cookie)", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    String refreshToken,
     
-    private UserResponseDTO user;
-    private Set<String> roles;
-}
+    @Schema(description = "User information")
+    UserResponseDTO user,
+    
+    @Schema(description = "User role names", example = "[\"ROLE_ADMIN\", \"ROLE_USER\"]")
+    Set<String> roles
+) {}
