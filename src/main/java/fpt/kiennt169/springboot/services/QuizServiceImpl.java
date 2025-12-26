@@ -126,7 +126,6 @@ public class QuizServiceImpl implements QuizService {
         quizRepository.save(quiz);
     }
     
-    // Helper methods to reduce code duplication
     private void addQuestionIfNotExists(Quiz quiz, Question question) {
         if (!quiz.getQuestions().contains(question)) {
             quiz.getQuestions().add(question);

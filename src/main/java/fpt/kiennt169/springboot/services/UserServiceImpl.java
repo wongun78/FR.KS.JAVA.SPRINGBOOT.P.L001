@@ -105,7 +105,6 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
     
-    // Helper method to reduce code duplication
     private void assignRolesToUser(User user, Set<UUID> roleIds) {
         if (roleIds != null && !roleIds.isEmpty()) {
             Set<Role> roles = new HashSet<>();
