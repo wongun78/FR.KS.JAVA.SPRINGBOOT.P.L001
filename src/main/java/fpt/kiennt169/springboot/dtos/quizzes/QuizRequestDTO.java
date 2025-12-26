@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @Schema(description = "Quiz creation/update request payload")
 public record QuizRequestDTO(
     
-    @Schema(description = "Quiz title", example = "Java Programming Basics", required = true, maxLength = 150)
+    @Schema(description = "Quiz title", example = "Java Programming Basics", maxLength = 150)
     @NotBlank(message = "{validation.quiz.title.notblank}")
     @Size(max = 150, message = "{validation.quiz.title.size}")
     String title,
@@ -18,7 +18,7 @@ public record QuizRequestDTO(
     @Size(max = 500, message = "{validation.quiz.description.size}")
     String description,
     
-    @Schema(description = "Quiz duration in minutes", example = "60", required = true, minimum = "1")
+    @Schema(description = "Quiz duration in minutes", example = "60", minimum = "1")
     @NotNull(message = "{validation.quiz.duration.notnull}")
     @Min(value = 1, message = "{validation.quiz.duration.min}")
     Integer durationMinutes,

@@ -69,7 +69,7 @@ public class ExamController {
         
         ExamResultResponseDTO result = examService.submitExam(requestDTO);
         
-        String message = result.passed() 
+        String message = Boolean.TRUE.equals(result.passed()) 
             ? messageUtil.getMessage("success.exam.passed")
             : messageUtil.getMessage("success.exam.failed");
         
