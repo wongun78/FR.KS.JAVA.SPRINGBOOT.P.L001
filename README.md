@@ -39,6 +39,42 @@ Spring Boot REST API for Quiz Management System with JWT Authentication, Postgre
 - Docker Desktop
 - Postman (for API testing)
 
+### Environment Setup
+
+1. **Copy environment template**:
+
+```bash
+cp .env.example .env
+```
+
+2. **Configure environment variables** in `.env`:
+
+```env
+# Database Configuration
+DB_URL=jdbc:postgresql://localhost:5432/quiz_db
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+
+# JWT Configuration
+# Generate secure key: openssl rand -base64 64
+JWT_SECRET=your_jwt_secret_key_here_minimum_256_bits
+JWT_EXPIRATION=86400000
+JWT_REFRESH_EXPIRATION=604800000
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Application Configuration
+APP_ENV=development
+```
+
+⚠️ **Security Notes**:
+
+- Never commit `.env` to Git (already in `.gitignore`)
+- Use strong JWT secret (minimum 256 bits)
+- Change default database password in production
+- Generate new secret: `openssl rand -base64 64`
+
 ### Option 1: Run with Docker Compose (Recommended)
 
 ```bash
@@ -54,10 +90,13 @@ docker compose up --build
 ### Option 2: Run Locally (Development)
 
 ```bash
-# 1. Start PostgreSQL only
+# 1. Make sure .env file exists
+cp .env.example .env
+
+# 2. Start PostgreSQL only
 docker compose up -d postgres
 
-# 2. Run application
+# 3. Run application
 ./gradlew bootRun
 
 # Or use VS Code "Run: Application" task

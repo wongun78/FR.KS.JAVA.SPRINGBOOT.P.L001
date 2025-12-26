@@ -43,6 +43,9 @@ dependencies {
 	// Springdoc OpenAPI (Swagger UI)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
+	// Dotenv for environment variables
+	implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
