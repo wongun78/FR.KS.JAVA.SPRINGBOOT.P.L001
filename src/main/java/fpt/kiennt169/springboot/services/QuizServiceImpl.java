@@ -29,7 +29,7 @@ public class QuizServiceImpl implements QuizService {
     private final QuizMapper quizMapper;
 
     @Override
-    public QuizResponseDTO createQuiz(QuizRequestDTO requestDTO) {
+    public QuizResponseDTO create(QuizRequestDTO requestDTO) {
         Quiz quiz = quizMapper.toEntity(requestDTO);
         
         if (quiz.getActive() == null) {
@@ -42,15 +42,34 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<QuizResponseDTO> getAllQuizzes(Pageable pageable) {
+    public PageResponseDTO<QuizResponseDTO> getWithPaging(Pageable pageable) {
         Page<Quiz> quizPage = quizRepository.findAll(pageable);
+        Page<QuizResponseDTO> responsePage = quizPage.map(quizMapper::toResponseDTO);
+        return PageResponseDTO.from(responsePage);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<QuizResponseDTO> searchWithPaging(String title, Boolean active, Pageable pageable) {
+        Page<Quiz> quizPage;
+        
+        if (title != null && active != null) {
+            quizPage = quizRepository.findByTitleContainingIgnoreCaseAndActive(title, active, pageable);
+        } else if (title != null) {
+            quizPage = quizRepository.findByTitleContainingIgnoreCase(title, pageable);
+        } else if (active != null) {
+            quizPage = quizRepository.findByActive(active, pageable);
+        } else {
+            quizPage = quizRepository.findAll(pageable);
+        }
+        
         Page<QuizResponseDTO> responsePage = quizPage.map(quizMapper::toResponseDTO);
         return PageResponseDTO.from(responsePage);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QuizResponseDTO getQuizById(UUID id) {
+    public QuizResponseDTO getById(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
         return quizMapper.toResponseDTO(quiz);
@@ -58,14 +77,14 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
-    public QuizDetailResponseDTO getQuizWithQuestions(UUID id) {
+    public QuizDetailResponseDTO getWithQuestions(UUID id) {
         Quiz quiz = quizRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
         return quizMapper.toDetailResponseDTO(quiz);
     }
 
     @Override
-    public QuizResponseDTO updateQuiz(UUID id, QuizRequestDTO requestDTO) {
+    public QuizResponseDTO update(UUID id, QuizRequestDTO requestDTO) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
         
@@ -76,7 +95,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public void deleteQuiz(UUID id) {
+    public void delete(UUID id) {
         if (!quizRepository.existsById(id)) {
             throw new ResourceNotFoundException("Quiz", "id", id);
         }
@@ -84,7 +103,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public QuizDetailResponseDTO addQuestionToQuiz(UUID quizId, UUID questionId) {
+    public QuizDetailResponseDTO addQuestion(UUID quizId, UUID questionId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         
@@ -97,7 +116,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public QuizDetailResponseDTO addQuestionsToQuiz(UUID quizId, java.util.List<UUID> questionIds) {
+    public QuizDetailResponseDTO addQuestions(UUID quizId, java.util.List<UUID> questionIds) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         
@@ -111,7 +130,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public void removeQuestionFromQuiz(UUID quizId, UUID questionId) {
+    public void removeQuestion(UUID quizId, UUID questionId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         

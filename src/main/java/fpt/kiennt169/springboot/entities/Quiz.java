@@ -11,7 +11,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "quizzes")
+@Table(name = "quizzes", indexes = {
+    @Index(name = "idx_quiz_title", columnList = "title"),
+    @Index(name = "idx_quiz_active", columnList = "active"),
+    @Index(name = "idx_quiz_title_active", columnList = "title, active"),
+    @Index(name = "idx_quiz_active_created", columnList = "active, created_at")
+})
 public class Quiz extends BaseEntity {
     
     @Id

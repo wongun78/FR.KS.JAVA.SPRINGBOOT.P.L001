@@ -62,7 +62,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(
             @Parameter(description = "User details with role assignments", required = true)
             @Valid @RequestBody UserRequestDTO requestDTO) {
-        UserResponseDTO response = userService.createUser(requestDTO);
+        UserResponseDTO response = userService.create(requestDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created(response, messageUtil.getMessage("success.user.created")));
@@ -89,7 +89,36 @@ public class UserController {
     public ResponseEntity<ApiResponse<PageResponseDTO<UserResponseDTO>>> getAllUsers(
             @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
             Pageable pageable) {
-        PageResponseDTO<UserResponseDTO> response = userService.getAllUsers(pageable);
+        PageResponseDTO<UserResponseDTO> response = userService.getWithPaging(pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved.all")));
+    }
+    
+    @Operation(
+        summary = "Search users with pagination",
+        description = "Search users by full name and/or active status with pagination support"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Users searched successfully",
+            content = @Content(schema = @Schema(implementation = PageResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Requires ADMIN role",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<PageResponseDTO<UserResponseDTO>>> searchUsers(
+            @Parameter(description = "Full name to search for")
+            @RequestParam(required = false) String fullName,
+            @Parameter(description = "Active status filter")
+            @RequestParam(required = false) Boolean active,
+            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            Pageable pageable) {
+        PageResponseDTO<UserResponseDTO> response = userService.searchWithPaging(fullName, active, pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved.all")));
     }
 
@@ -113,7 +142,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(
             @Parameter(description = "User ID", required = true)
             @PathVariable UUID id) {
-        UserResponseDTO response = userService.getUserById(id);
+        UserResponseDTO response = userService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved")));
     }
 
@@ -137,7 +166,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByEmail(
             @Parameter(description = "User email address", required = true, example = "user@example.com")
             @PathVariable String email) {
-        UserResponseDTO response = userService.getUserByEmail(email);
+        UserResponseDTO response = userService.getByEmail(email);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved")));
     }
 
@@ -173,7 +202,7 @@ public class UserController {
             @PathVariable UUID id,
             @Parameter(description = "Updated user details", required = true)
             @Valid @RequestBody UserRequestDTO requestDTO) {
-        UserResponseDTO response = userService.updateUser(id, requestDTO);
+        UserResponseDTO response = userService.update(id, requestDTO);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.updated")));
     }
 
@@ -202,7 +231,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @Parameter(description = "User ID", required = true)
             @PathVariable UUID id) {
-        userService.deleteUser(id);
+        userService.delete(id);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.user.deleted")));
     }
 }

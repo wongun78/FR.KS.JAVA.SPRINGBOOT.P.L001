@@ -57,7 +57,7 @@ public class QuestionController {
     public ResponseEntity<ApiResponse<QuestionResponseDTO>> createQuestion(
             @Parameter(description = "Question details with answer choices", required = true)
             @Valid @RequestBody QuestionRequestDTO requestDTO) {
-        QuestionResponseDTO response = questionService.createQuestion(requestDTO);
+        QuestionResponseDTO response = questionService.create(requestDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created(response, messageUtil.getMessage("success.question.created")));
@@ -78,7 +78,30 @@ public class QuestionController {
     public ResponseEntity<ApiResponse<PageResponseDTO<QuestionResponseDTO>>> getAllQuestions(
             @Parameter(description = "Pagination parameters (page, size, sort)", example = "page=0&size=10&sort=createdAt,desc")
             Pageable pageable) {
-        PageResponseDTO<QuestionResponseDTO> response = questionService.getAllQuestions(pageable);
+        PageResponseDTO<QuestionResponseDTO> response = questionService.getWithPaging(pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.retrieved.all")));
+    }
+    
+    @Operation(
+        summary = "Search questions with pagination",
+        description = "Search questions by content and/or type with pagination support"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Questions searched successfully",
+            content = @Content(schema = @Schema(implementation = PageResponseDTO.class))
+        )
+    })
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PageResponseDTO<QuestionResponseDTO>>> searchQuestions(
+            @Parameter(description = "Content to search for")
+            @RequestParam(required = false) String content,
+            @Parameter(description = "Question type filter")
+            @RequestParam(required = false) fpt.kiennt169.springboot.enums.QuestionTypeEnum type,
+            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            Pageable pageable) {
+        PageResponseDTO<QuestionResponseDTO> response = questionService.searchWithPaging(content, type, pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.retrieved.all")));
     }
 
@@ -102,7 +125,7 @@ public class QuestionController {
     public ResponseEntity<ApiResponse<QuestionResponseDTO>> getQuestionById(
             @Parameter(description = "Question ID", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
-        QuestionResponseDTO response = questionService.getQuestionById(id);
+        QuestionResponseDTO response = questionService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.retrieved")));
     }
 
@@ -134,7 +157,7 @@ public class QuestionController {
             @PathVariable UUID id,
             @Parameter(description = "Updated question details", required = true)
             @Valid @RequestBody QuestionRequestDTO requestDTO) {
-        QuestionResponseDTO response = questionService.updateQuestion(id, requestDTO);
+        QuestionResponseDTO response = questionService.update(id, requestDTO);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.updated")));
     }
 
@@ -163,7 +186,7 @@ public class QuestionController {
     public ResponseEntity<ApiResponse<Void>> deleteQuestion(
             @Parameter(description = "Question ID", required = true)
             @PathVariable UUID id) {
-        questionService.deleteQuestion(id);
+        questionService.delete(id);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.question.deleted")));
     }
 }

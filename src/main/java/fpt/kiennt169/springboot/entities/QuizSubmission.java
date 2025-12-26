@@ -10,7 +10,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "quiz_submissions")
+@Table(name = "quiz_submissions", indexes = {
+    @Index(name = "idx_submission_user_id", columnList = "user_id"),
+    @Index(name = "idx_submission_quiz_id", columnList = "quiz_id"),
+    @Index(name = "idx_submission_time", columnList = "submission_time"),
+    @Index(name = "idx_submission_score", columnList = "score"),
+    @Index(name = "idx_submission_user_quiz", columnList = "user_id, quiz_id"),
+    @Index(name = "idx_submission_quiz_score", columnList = "quiz_id, score"),
+    @Index(name = "idx_submission_user_time", columnList = "user_id, submission_time")
+})
 public class QuizSubmission extends BaseEntity {
     
     @Id

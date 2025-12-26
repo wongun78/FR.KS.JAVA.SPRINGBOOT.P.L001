@@ -32,7 +32,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionResponseDTO createQuestion(QuestionRequestDTO requestDTO) {
+    public QuestionResponseDTO create(QuestionRequestDTO requestDTO) {
         Question question = questionMapper.toEntity(requestDTO);
 
         if (question.getAnswers() != null) {
@@ -46,17 +46,36 @@ public class QuestionServiceImpl implements QuestionService {
    
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
+    public PageResponseDTO<QuestionResponseDTO> getWithPaging(Pageable pageable) {
         Page<Question> questionPage = questionRepository.findAll(pageable);
         
         Page<QuestionResponseDTO> responsePage = questionPage.map(questionMapper::toResponseDTO);
         
         return PageResponseDTO.from(responsePage);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<QuestionResponseDTO> searchWithPaging(String content, fpt.kiennt169.springboot.enums.QuestionTypeEnum type, Pageable pageable) {
+        Page<Question> questionPage;
+        
+        if (content != null && type != null) {
+            questionPage = questionRepository.findByContentContainingIgnoreCaseAndType(content, type, pageable);
+        } else if (content != null) {
+            questionPage = questionRepository.findByContentContainingIgnoreCase(content, pageable);
+        } else if (type != null) {
+            questionPage = questionRepository.findByType(type, pageable);
+        } else {
+            questionPage = questionRepository.findAll(pageable);
+        }
+        
+        Page<QuestionResponseDTO> responsePage = questionPage.map(questionMapper::toResponseDTO);
+        return PageResponseDTO.from(responsePage);
+    }
 
     @Override
     @Transactional(readOnly = true)
-    public QuestionResponseDTO getQuestionById(UUID id) {
+    public QuestionResponseDTO getById(UUID id) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
         
@@ -65,7 +84,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionResponseDTO updateQuestion(UUID id, QuestionRequestDTO requestDTO) {
+    public QuestionResponseDTO update(UUID id, QuestionRequestDTO requestDTO) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
         
@@ -90,7 +109,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public void deleteQuestion(UUID id) {
+    public void delete(UUID id) {
         if (!questionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Question", "id", id);
         }

@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserResponseDTO createUser(UserRequestDTO requestDTO) {
+    public UserResponseDTO create(UserRequestDTO requestDTO) {
         if (userRepository.existsByEmail(requestDTO.email())) {
             throw new EmailAlreadyExistsException(requestDTO.email());
         }
@@ -52,15 +52,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<UserResponseDTO> getAllUsers(Pageable pageable) {
+    public PageResponseDTO<UserResponseDTO> getWithPaging(Pageable pageable) {
         Page<User> userPage = userRepository.findAll(pageable);
+        Page<UserResponseDTO> responsePage = userPage.map(userMapper::toResponseDTO);
+        return PageResponseDTO.from(responsePage);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<UserResponseDTO> searchWithPaging(String fullName, Boolean active, Pageable pageable) {
+        Page<User> userPage;
+        
+        if (fullName != null && active != null) {
+            userPage = userRepository.findByFullNameContainingIgnoreCaseAndActive(fullName, active, pageable);
+        } else if (fullName != null) {
+            userPage = userRepository.findByFullNameContainingIgnoreCase(fullName, pageable);
+        } else if (active != null) {
+            userPage = userRepository.findByActive(active, pageable);
+        } else {
+            userPage = userRepository.findAll(pageable);
+        }
+        
         Page<UserResponseDTO> responsePage = userPage.map(userMapper::toResponseDTO);
         return PageResponseDTO.from(responsePage);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponseDTO getUserById(UUID id) {
+    public UserResponseDTO getById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         return userMapper.toResponseDTO(user);
@@ -68,14 +87,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponseDTO getUserByEmail(String email) {
+    public UserResponseDTO getByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
         return userMapper.toResponseDTO(user);
     }
 
     @Override
-    public UserResponseDTO updateUser(UUID id, UserRequestDTO requestDTO) {
+    public UserResponseDTO update(UUID id, UserRequestDTO requestDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
@@ -98,7 +117,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(UUID id) {
+    public void delete(UUID id) {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User", "id", id);
         }

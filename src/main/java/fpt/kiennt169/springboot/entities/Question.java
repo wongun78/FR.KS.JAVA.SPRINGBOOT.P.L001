@@ -13,7 +13,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "questions")
+@Table(name = "questions", indexes = {
+    @Index(name = "idx_question_content", columnList = "content"),
+    @Index(name = "idx_question_type", columnList = "type"),
+    @Index(name = "idx_question_content_type", columnList = "content, type"),
+    @Index(name = "idx_question_type_score", columnList = "type, score")
+})
 public class Question extends BaseEntity {
 
     @Id

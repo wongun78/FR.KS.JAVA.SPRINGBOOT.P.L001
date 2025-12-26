@@ -58,7 +58,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<QuizResponseDTO>> createQuiz(
             @Parameter(description = "Quiz details", required = true)
             @Valid @RequestBody QuizRequestDTO requestDTO) {
-        QuizResponseDTO response = quizService.createQuiz(requestDTO);
+        QuizResponseDTO response = quizService.create(requestDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created(response, messageUtil.getMessage("success.quiz.created")));
@@ -79,7 +79,30 @@ public class QuizController {
     public ResponseEntity<ApiResponse<PageResponseDTO<QuizResponseDTO>>> getAllQuizzes(
             @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
             Pageable pageable) {
-        PageResponseDTO<QuizResponseDTO> response = quizService.getAllQuizzes(pageable);
+        PageResponseDTO<QuizResponseDTO> response = quizService.getWithPaging(pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.retrieved.all")));
+    }
+    
+    @Operation(
+        summary = "Search quizzes with pagination",
+        description = "Search quizzes by title and/or active status with pagination support"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Quizzes searched successfully",
+            content = @Content(schema = @Schema(implementation = PageResponseDTO.class))
+        )
+    })
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PageResponseDTO<QuizResponseDTO>>> searchQuizzes(
+            @Parameter(description = "Title to search for")
+            @RequestParam(required = false) String title,
+            @Parameter(description = "Active status filter")
+            @RequestParam(required = false) Boolean active,
+            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            Pageable pageable) {
+        PageResponseDTO<QuizResponseDTO> response = quizService.searchWithPaging(title, active, pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.retrieved.all")));
     }
 
@@ -103,7 +126,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<QuizResponseDTO>> getQuizById(
             @Parameter(description = "Quiz ID", required = true)
             @PathVariable UUID id) {
-        QuizResponseDTO response = quizService.getQuizById(id);
+        QuizResponseDTO response = quizService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.retrieved")));
     }
 
@@ -127,7 +150,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<QuizDetailResponseDTO>> getQuizWithQuestions(
             @Parameter(description = "Quiz ID", required = true)
             @PathVariable UUID id) {
-        QuizDetailResponseDTO response = quizService.getQuizWithQuestions(id);
+        QuizDetailResponseDTO response = quizService.getWithQuestions(id);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.retrieved.with_questions")));
     }
 
@@ -159,7 +182,7 @@ public class QuizController {
             @PathVariable UUID id,
             @Parameter(description = "Updated quiz details", required = true)
             @Valid @RequestBody QuizRequestDTO requestDTO) {
-        QuizResponseDTO response = quizService.updateQuiz(id, requestDTO);
+        QuizResponseDTO response = quizService.update(id, requestDTO);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.updated")));
     }
 
@@ -188,7 +211,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<Void>> deleteQuiz(
             @Parameter(description = "Quiz ID", required = true)
             @PathVariable UUID id) {
-        quizService.deleteQuiz(id);
+        quizService.delete(id);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.quiz.deleted")));
     }
 
@@ -220,7 +243,7 @@ public class QuizController {
             @PathVariable UUID quizId,
             @Parameter(description = "Question ID", required = true)
             @PathVariable UUID questionId) {
-        QuizDetailResponseDTO response = quizService.addQuestionToQuiz(quizId, questionId);
+        QuizDetailResponseDTO response = quizService.addQuestion(quizId, questionId);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.question_added")));
     }
 
@@ -252,7 +275,7 @@ public class QuizController {
             @PathVariable UUID quizId,
             @Parameter(description = "List of question IDs to add", required = true, example = "[\"uuid1\", \"uuid2\"]")
             @RequestBody java.util.List<UUID> questionIds) {
-        QuizDetailResponseDTO response = quizService.addQuestionsToQuiz(quizId, questionIds);
+        QuizDetailResponseDTO response = quizService.addQuestions(quizId, questionIds);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.quiz.questions_added")));
     }
 
@@ -283,7 +306,7 @@ public class QuizController {
             @PathVariable UUID quizId,
             @Parameter(description = "Question ID", required = true)
             @PathVariable UUID questionId) {
-        quizService.removeQuestionFromQuiz(quizId, questionId);
+        quizService.removeQuestion(quizId, questionId);
         return ResponseEntity.ok(ApiResponse.success(null, messageUtil.getMessage("success.quiz.question_removed")));
     }
 }
